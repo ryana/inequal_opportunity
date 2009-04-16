@@ -82,14 +82,7 @@ module ActiveRecord
     end
 
   end
-end
 
-
-
-include ActiveRecord::Inequality::WrapperMethods
-ActiveRecord::Base.extend ActiveRecord::Inequality::WrapperMethods
-
-module ActiveRecord
   class Base
     class << self
       alias attribute_condition_orig attribute_condition
@@ -101,6 +94,7 @@ module ActiveRecord
         end
       end
 
+      # Copied this from AR.  Not ideal.
       alias expand_range_bind_variables_orig expand_range_bind_variables
       def expand_range_bind_variables(bind_vars)
         expanded = []
@@ -123,4 +117,8 @@ module ActiveRecord
 
     end
   end
+
 end
+
+include ActiveRecord::Inequality::WrapperMethods
+
