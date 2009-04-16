@@ -1,5 +1,4 @@
 module ActiveRecord
-
   module Inequality
 
     class Base
@@ -9,16 +8,75 @@ module ActiveRecord
         self.value = val
       end
 
+      def operator
+        raise('Nope')
+      end
     end
 
     class GreaterThanEqual < Base
+      def operator
+        '>='
+      end
     end
 
+    class GreaterThan < Base
+      def operator
+        '>'
+      end
+    end
+
+    class LessThanEqual < Base
+      def operator
+        '<='
+      end
+    end
+
+    class LessThan < Base
+      def operator
+        '<'
+      end
+    end
+
+    class NotEqual < Base
+      def operator
+        '<>'
+      end
+    end
+
+    class Like < Base
+      def operator
+        'LIKE'
+      end
+ 
+      def value
+        "%#{super}%"
+      end
+    end
 
     module WrapperMethods
 
+      def lte(val)
+        ActiveRecord::Inequality::LessThanEqual.new(val)
+      end
+
+      def lt(val)
+        ActiveRecord::Inequality::LessThan.new(val)
+      end
+
       def gte(val)
-        GreaterThanEqual.new(val)
+        ActiveRecord::Inequality::GreaterThanEqual.new(val)
+      end
+
+      def gt(val)
+        ActiveRecord::Inequality::GreaterThan.new(val)
+      end
+
+      def ne(val)
+        ActiveRecord::Inequality::NotEqual.new(val)
+      end
+
+      def like(val)
+        ActiveRecord::Inequality::Like.new(val)
       end
 
     end
@@ -26,5 +84,43 @@ module ActiveRecord
   end
 end
 
-ActiveRecord::Base.send :include, ActiveRecord::Inequality::WrapperMethods
+
+
+include ActiveRecord::Inequality::WrapperMethods
 ActiveRecord::Base.extend ActiveRecord::Inequality::WrapperMethods
+
+module ActiveRecord
+  class Base
+    class << self
+      alias attribute_condition_orig attribute_condition
+      def attribute_condition(quoted_column_name, argument)
+        if argument.is_a? ActiveRecord::Inequality::Base
+          "#{quoted_column_name} #{argument.operator} ?"
+        else
+          attribute_condition_orig(quoted_column_name, argument)
+        end
+      end
+
+      alias expand_range_bind_variables_orig expand_range_bind_variables
+      def expand_range_bind_variables(bind_vars)
+        expanded = []
+
+        bind_vars.each do |var|
+          next if var.is_a?(Hash)
+
+          if var.is_a?(Range)
+            expanded << var.first
+            expanded << var.last
+          elsif var.is_a?(ActiveRecord::Inequality::Base)
+            expanded << var.value
+          else
+            expanded << var
+          end
+        end
+
+        expanded
+      end
+
+    end
+  end
+end
