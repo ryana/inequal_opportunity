@@ -6,10 +6,9 @@ for specifying SQL conditions:
   YourModel.count(:conditions => {:id => 5})
   YourModel.all(:limit => 5, :order => :created_at, :conditions => {:user_id => 5})
 
-But this has format lacks inequalities.  There is no way to construct a query like
-this without using strings in your conditions hash:
+But this hash format lacks inequalities.  In order to generate:
 
-SELECT * from your_models where id <> '42';
+  SELECT * from your_models where id <> '42';
 
 You have to write:
 
@@ -19,7 +18,7 @@ With Inequal Opportunity, you can write:
 
   YourModel.count(:conditions => {:id => ne(42)})
 
-Where Object#ne wraps time in a ActiveRecord::Inequality::NotEqual class,
+Where Object#ne wraps 42 in a ActiveRecord::Inequality::NotEqual class,
 which is then used to insert the proper operator into the generated SQL.
 
 Test coverage is real sparse right now.  I also am not completely satisfied with
