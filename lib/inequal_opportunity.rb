@@ -11,6 +11,19 @@ module ActiveRecord
       def operator
         raise('Nope')
       end
+
+      def ==(val)
+        self.operator == val.operator && self.value == val.value
+      end
+    
+      def string_value
+        value ? "'#{value}'" : 'nil'
+      end
+
+      def inspect
+        " #{operator} #{self.string_value}"
+      end
+
     end
 
     class GreaterThanEqual < Base
@@ -39,7 +52,13 @@ module ActiveRecord
 
     class NotEqual < Base
       def operator
-        '<>'
+        if value.nil?
+         'IS NOT'
+        elsif value.is_a? Array
+         'NOT IN'
+        else
+          '<>'
+        end
       end
     end
 
