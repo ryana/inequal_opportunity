@@ -21,9 +21,19 @@ With Inequal Opportunity, you can write:
 Where Object#ne wraps 42 in a ActiveRecord::Inequality::NotEqual class,
 which is then used to insert the proper operator into the generated SQL.
 
-Test coverage is real sparse right now.  I also am not completely satisfied with
-the way I overwrite ActiveRecord.expand_range_bind_variables, but it works for now.
+Other supported inequalities are:
 
+  gte()     =>      >=
+  gt()      =>      >
+  lte()     =>      <=
+  le()      =>      <
+  ne()      =>      <>
+  ne(nil)   =>      IS NOT
+
+
+Test coverage is real sparse right now.  And it's only been tested
+on MySQL.  I also am not completely satisfied with the way I overwrite
+ActiveRecord.expand_range_bind_variables, but it works.
 
 == License
 
