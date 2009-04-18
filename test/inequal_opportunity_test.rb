@@ -76,4 +76,43 @@ class InequalOpportunityTest < Test::Unit::TestCase
     end
   end
 
+  context "Object" do
+    should "have gte" do
+      wrapped = gte(5)
+      assert_equal wrapped.operator, '>='
+      assert_equal wrapped, ActiveRecord::Inequality::GreaterThanEqual.new(5)
+    end
+
+    should "have gt" do
+      wrapped = gt(5)
+      assert_equal wrapped.operator, '>'
+      assert_equal wrapped, ActiveRecord::Inequality::GreaterThan.new(5)
+    end
+
+    should "have lte" do
+      wrapped = lte(5)
+      assert_equal wrapped.operator, '<='
+      assert_equal wrapped, ActiveRecord::Inequality::LessThanEqual.new(5)
+    end
+
+    should "have lt" do
+      wrapped = lt(5)
+      assert_equal wrapped.operator, '<'
+      assert_equal wrapped, ActiveRecord::Inequality::LessThan.new(5)
+    end
+
+    should "have ne" do
+      wrapped = ne(5)
+      assert_equal wrapped.operator, '<>'
+      assert_equal wrapped, ActiveRecord::Inequality::NotEqual.new(5)
+    end
+
+    should "have a different operator when calling ne w/ nil" do
+      wrapped = ne(nil)
+      assert_equal wrapped.operator, 'IS NOT'
+      assert_equal wrapped, ActiveRecord::Inequality::NotEqual.new(nil)
+    end
+
+  end
+
 end
