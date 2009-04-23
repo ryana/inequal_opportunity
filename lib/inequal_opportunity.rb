@@ -1,6 +1,9 @@
 module ActiveRecord
   module Inequality
 
+    class InequalError < Exception
+    end
+
     class Base
       attr_accessor :value
   
@@ -67,8 +70,15 @@ module ActiveRecord
         'LIKE'
       end
  
-      def value
-        "%#{super}%"
+      # This method is why I love Ruby
+      def value(override = false)
+        v = super(*[])
+
+        if !override && !v.is_a?(Numeric) && !v.is_a?(String)
+          raise InequalError, "Passing #{v.class} to Like.  You can't possibly want to do this"
+        end
+
+        "%#{v}%"
       end
     end
 
@@ -107,7 +117,8 @@ module ActiveRecord
       alias attribute_condition_orig attribute_condition
       def attribute_condition(quoted_column_name, argument)
         if argument.is_a? ActiveRecord::Inequality::Base
-          "#{quoted_column_name} #{argument.operator} ?"
+          question = argument.value.is_a?(Array) ? '(?)' : '?'
+          "#{quoted_column_name} #{argument.operator} #{question}"
         else
           attribute_condition_orig(quoted_column_name, argument)
         end
