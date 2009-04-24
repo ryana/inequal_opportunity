@@ -143,4 +143,16 @@ class InequalOpportunityTest < Test::Unit::TestCase
 
   end
 
+  context "expand_range_bind_variables_orig" do
+    should "return a proper array" do
+      range_start = 1
+      range_end = 9
+
+      input = [{:a => 1}, (range_start..range_end), "Yo", {:c => 'd'}, 23, [1,2,3]]
+      res = ActiveRecord::Base.send :expand_range_bind_variables_orig, input
+
+      assert_equal res, [range_start, range_end, "Yo", 23, [1,2,3]]
+    end
+  end
+
 end
