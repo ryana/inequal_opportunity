@@ -20,9 +20,9 @@ table names for you.
 
 ActiveRecord looks for Array and Range types to decide whether to use
 'IN' or 'BETWEEN' instead of the normal '=' as the comparison operator
-when in generating SQL. inequal_opportunity extends that pattern by
+when generating SQL. inequal_opportunity extends that pattern by
 wrapping the value in a series of ActiveRecord::Inequality::Base classes.
-Just wrap the value in one of the following helper functions:
+Just wrap the value with one of the following helper functions:
 
   gte()     =>      >= 
   gt()      =>      >
@@ -48,11 +48,15 @@ in default scopes:
     default_scope :conditions => {:type => ne('spam')}
   end
 
-and pretty much everywhere else I've tested.
+and pretty much everywhere else I've tested manually.
 
 Test coverage is kind of sparse right now, and it's only been tested
-on MySQL.  I also am not completely satisfied with the way I alias
-ActiveRecord::Base.expand_range_bind_variables, but it works.
+on MySQL.  But it has been rock solid in every situation I've thrown it in,
+so I figured the best way to improve it was to release the hounds (YOU).
+
+Note that I am not completely satisfied with the way I alias
+ActiveRecord::Base.expand_range_bind_variables.  It smells, but it works.
+Suggestions welcome.
 
 == License
 
