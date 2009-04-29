@@ -1,27 +1,30 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 require File.join(File.dirname(__FILE__), 'db_setup')
 
-require 'ruby-debug'
+METHOD_SYMBOLS = [:gt, :gte, :lt, :lte, :ne, :like]
 
-  METHOD_SYMBOLS = [:gt, :gte, :lt, :lte, :ne, :like]
+class Main < ActiveRecord::Base
+  belongs_to :seconds
+  named_scope :newer_than, lambda {|time| {:conditions => {:created_at => gte(time) }} }
 
-  class Main < ActiveRecord::Base
-    belongs_to :seconds
-    named_scope :newer_than, lambda {|time| {:conditions => {:created_at => gte(time) }} }
-
-    METHOD_SYMBOLS.each do |s|
-      named_scope :"try_#{s}", lambda {|i| {:conditions => {:id => send(s, i)}} }
-    end
-
+  METHOD_SYMBOLS.each do |s|
+    named_scope :"try_#{s}", lambda {|i| {:conditions => {:id => send(s, i)}} }
   end
 
-  class Second < ActiveRecord::Base
-    has_many :mains
-  end
+end
 
-  ActiveRecord::Base.logger = Logger.new(STDERR)
+class Second < ActiveRecord::Base
+  has_many :mains
+end
 
 class InequalOpportunityTest < Test::Unit::TestCase
+
+  def setup
+    TABLES.each do |t|
+      ActiveRecord::Base.connection.execute("DELETE FROM #{t};")
+    end
+ end
+
   context "a model" do
     setup do
       @model = Main
@@ -32,7 +35,7 @@ class InequalOpportunityTest < Test::Unit::TestCase
     end
 
     should "should work with a named_scope" do
-      assert_equal Main.newer_than(2.days.from_now).all, []
+      assert_equal Main.newer_than(2.days.ago).all, []
     end
 
     should "generate proper sql for array" do

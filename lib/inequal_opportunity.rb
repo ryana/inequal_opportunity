@@ -124,7 +124,6 @@ module ActiveRecord
         end
       end
 
-      # Copied this from AR.  Not ideal.
       alias expand_range_bind_variables_orig expand_range_bind_variables
       def expand_range_bind_variables(bind_vars)
         expanded = []
