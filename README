@@ -1,46 +1,64 @@
 = Inequal Opportunity
 
-ActiveRecord is a ruby ORM released with Ruby on Rails.  It has a hash syntax
-for specifying SQL conditions:
+inequal_opportunity exists because this does not work in ActiveRecord:
 
-  YourModel.count(:conditions => {:id => 5})
-  YourModel.all(:limit => 5, :order => :created_at, :conditions => {:user_id => 5})
+  Doctor.all(:joins => :patients, :conditions => {:patients => ['age > ?', 20]})
 
-But this hash format lacks inequalities.  In order to generate:
+You will get an unknown column exception looking for `doctors`.`age`.
+Instead, you need to write:
 
-  SELECT * from your_models where id <> '42';
+  Doctor.all(:joins => :pateints, :conditions => ['`patients`.`age` > ?', 20])
 
-You have to write:
+Putting the string table name in the query annoyed me.  On top of that,
+I always wanted a way to eliminate strings from my named scopes and queries.
+So now with inequal_opportunity you can write:
 
-  YourModel.count(:conditions => ['id <> ?', 42])
+  Doctor.all(:joins => :patients, :conditions => {:patients => {:age => gt(20)}})
 
-With Inequal Opportunity, you can write:
+Not only is it prettier (hashed), but ActiveRecord will keep track of
+table names for you.
 
-  YourModel.count(:conditions => {:id => ne(42)})
+ActiveRecord looks for Array and Range types to decide whether to use
+'IN' or 'BETWEEN' instead of the normal '=' as the comparison operator
+when in generating SQL. inequal_opportunity extends that pattern by
+wrapping the value in a series of ActiveRecord::Inequality::Base classes.
+Just wrap the value in one of the following helper functions:
 
-Where Object#ne wraps 42 in a ActiveRecord::Inequality::NotEqual class,
-which is then used to insert the proper operator into the generated SQL.
-
-Other supported inequalities are:
-
-  gte()     =>      >=
+  gte()     =>      >= 
   gt()      =>      >
   lte()     =>      <=
   le()      =>      <
   ne()      =>      <>
   ne(nil)   =>      IS NOT
 
+and the appropriate SQL will be generated.  This works in finds, as shown
+above, in counts:
 
-Test coverage is real sparse right now.  And it's only been tested
-on MySQL.  I also am not completely satisfied with the way I overwrite
-ActiveRecord.expand_range_bind_variables, but it works.
+  People.count(:age => gt(20))
+
+in named scopes:
+
+  class People < AR::B
+    named_scope :underage, :conditions => {:age => lte(18)}
+  end
+
+in default scopes:
+
+  class Feedback < AR::B
+    default_scope :conditions => {:type => ne('spam')}
+  end
+
+and pretty much everywhere else I've tested.
+
+Test coverage is kind of sparse right now, and it's only been tested
+on MySQL.  I also am not completely satisfied with the way I alias
+ActiveRecord::Base.expand_range_bind_variables, but it works.
 
 == License
 
-Inequal Opportunity is released under the MIT license.
+inequal_opportunity is released under the MIT license.
 
 
 == Support
 
-Just email me at ryan@angilly.com with questions, bugs,
-or patches
+Just email me at ryan@angilly.com with questions, bugs, or patches.
