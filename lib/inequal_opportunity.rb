@@ -55,9 +55,10 @@ module ActiveRecord
 
     class NotEqual < Base
       def operator
-        if value.nil?
+        case value
+        when NilClass, TrueClass, FalseClass
          'IS NOT'
-        elsif value.is_a? Array
+        when Array
          'NOT IN'
         else
           '<>'

@@ -138,6 +138,20 @@ class InequalOpportunityTest < Test::Unit::TestCase
       assert_equal wrapped, ActiveRecord::Inequality::NotEqual.new(nil)
     end
 
+    should "have a different operator when calling ne w/ true" do
+      wrapped = ne(true)
+      assert_equal wrapped.operator, 'IS NOT'
+      assert_equal wrapped, ActiveRecord::Inequality::NotEqual.new(true)
+    end
+
+    should "have a different operator when calling ne w/ false" do
+      wrapped = ne(false)
+      assert_equal wrapped.operator, 'IS NOT'
+      assert_equal wrapped, ActiveRecord::Inequality::NotEqual.new(false)
+    end
+
+
+
     should "have like" do
       wrapped = like('ryan')
       assert_equal wrapped.operator, 'LIKE'
